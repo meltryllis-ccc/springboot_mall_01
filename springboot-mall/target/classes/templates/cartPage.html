@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)http://getbootstrap.com/docs/4.0/examples/dashboard/ -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>Dashboard Template for Bootstrap</title>
+		<!-- Bootstrap core CSS -->
+		<link href="asserts/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/4.3.0/css/bootstrap.css}" rel="stylesheet">
+
+		<!-- Custom styles for this template -->
+		<link href="asserts/css/dashboard.css" th:href="@{/asserts/css/dashboard.css}" rel="stylesheet">
+		<style type="text/css">
+			/* Chart.js */
+
+			@-webkit-keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+
+			@keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+
+			.chartjs-render-monitor {
+				-webkit-animation: chartjs-render-animation 0.001s;
+				animation: chartjs-render-animation 0.001s;
+			}
+
+            .cartli{
+                display: block;
+                margin-top:16px;
+                padding-top:16px;
+                border:1px solid #a5d1f1;
+            }
+            .check{
+                position: relative;
+                left: 15px;
+                top: 36px;
+            }
+            .gl-i-wrap{
+                font-size:12px;
+                margin: 0px 18px 20px 18px;
+                padding-left: 5%;
+                padding-right: 10%;
+            }
+            .pname{
+                font-size:20px;
+                color: #00a0e9;
+                margin-left:66px;
+                margin-top:23px;
+                position:absolute;
+            }
+            .pinfo{
+                font-size:12px;
+                color: #ffc107;
+                line-height: 35px;
+                margin-left:180px;
+                margin-top:23px;
+                position:absolute;
+            }
+            .num{
+                margin-top:30px;
+                float:right ;
+                text-align:center;
+            }
+		</style>
+	</head>
+
+	<body>
+		<!--引入topbar-->
+		<div th:replace="commons/userbar::topbar"></div>
+		<div class="container-fluid">
+			<div class="row">
+				<!--引入sidebar-->
+				<div th:replace="commons/userbar::#sidebar(activeUri='main.html')"></div>
+				<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+
+                    <ul onclick="checkT_F()"><!-- 是否全选 -->
+                    <ul>
+                        <div>
+                            <input type="checkbox" id="all" name="allCK" onclick="allCheck()"/>
+                            <span id="myspan">全选</span>
+                            <button type="button" class="btn btn-warning" style="margin-left:36px;">
+                                <a id="delall" style="color:white;text-decoration:none" onclick="dproduct()">
+                                    移除选中的商品
+                                </a>
+                            </button>
+
+                            <button type="button" class="btn btn-info" style="margin-left:49px;">
+                                <a style="color:white;text-decoration:none">
+                                    购买选中的商品
+                                </a>
+                            </button>
+                        </div>
+
+                        <li class="cartli" th:each="cart:${cartList}">
+                            <input type="checkbox" class="check" th:id="${cart.id}" name="pcart" th:value="${cart.id}"/>
+                            <div class="gl-i-wrap">
+                                <a th:id="${cart.pid}" onclick="details(this)">
+                                    <img width="100" height="120" data-lazy-img="done" th:src="@{${cart.image}}">
+                                </a>
+
+                                <span class="pname" th:id="${cart.pid}" onclick="details(this)" th:text="${cart.pName}"></span>
+                                <span class="pinfo" th:text="${cart.info}"></span>
+                                <div class="num">
+
+                                    <button th:id="${cart.pid}" th:name="${cart.id}" onclick="jia(this)">
+                                        +
+                                    </button>
+                                    <span th:id="${cart.id}" th:text="${cart.num}" name="pnum"></span>
+
+                                    <button th:id="${cart.pid}" th:name="${cart.id}" onclick="jian(this)">
+                                        —
+                                    </button>
+
+                                    <br><br>
+                                    <button th:id="${cart.id}" onclick="removecart(this)" type="button" class="btn btn-danger btn-xs">从购物车移除</button>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <button type="button" class="btn btn-info btn-xs">去支付</button>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <canvas class="my-4 chartjs-render-monitor" id="myChart" width="1076" height="454" style="display: block; width: 1076px; height: 454px;"></canvas>
+
+				</main>
+			</div>
+		</div>
+
+        <script type="text/javascript">
+
+            function details(obj){
+                window.location.href="userProductDetails/" + $(obj).attr('id');
+            }
+
+            /*多选全选功能*/
+            function allCheck(){
+                var obj=document.getElementsByTagName("input");
+                if(document.getElementById("all").checked==true){
+                    for(var i=0;i<obj.length;i++){
+                        obj[i].checked=true;
+                    }
+                    myspan.innerHTML="取消全选";
+                }else{
+                    for(var i=0;i<obj.length;i++){
+                        obj[i].checked=false;
+                    }
+                    myspan.innerHTML="全选";
+                }
+            }
+
+            function checkT_F(){
+                var obj = document.getElementsByClassName("check");
+                var j=0;
+                for(var i=0;i<obj.length;i++){
+                    if(obj[i].checked==true){    //并且为选中
+                        j++;
+                    }
+                }
+                if(j==(obj.length)){    //如果复选框选中的数量等于（复选框总和减去全选这个选框的数量）
+                    document.getElementById("all").checked=true; //全选被激活
+                    myspan.innerHTML="取消全选";
+                    delall.innerHTML="清空购物车"
+                }else{
+                    document.getElementById("all").checked=false;    //取消全选//不勾选全选
+                    myspan.innerHTML="全选";
+                    delall.innerHTML="移除选中的商品"
+                }
+            }
+
+            function dproduct(){
+                var str=document.getElementsByName("pcart");
+                var objarray=str.length;
+                var pidarr=new Array();
+                var chestr = "";
+                for (i=0;i<objarray;i++){
+                    if(str[i].checked == true){
+                        chestr+=str[i].value;
+                        pidarr.push(str[i].value);
+                    }
+                }
+                if(chestr == ""){
+                    alert("未选中商品～！");
+                }
+                else{
+                    alert("成功移出购物车～" + pidarr);
+
+                    $.post({
+                        url: "/removecart/" + pidarr,
+                        success:function (data) {
+                        }
+                    });
+                }
+            }
+
+            /*控制商品数量加减*/
+            function jia(obj){
+                $.post({
+                    url: "/increase/" + $(obj).attr('id'),
+                    success:function (data) {
+                    }
+                });
+
+                var pnumarr=document.getElementsByName("pnum");
+
+                for (i=0;i<pnumarr.length;i++) {
+                    if (pnumarr[i].id == $(obj).attr('name')) {
+                        var number=parseInt(pnumarr[i].innerHTML);
+
+                        number++;
+                        pnumarr[i].innerHTML=number;
+                    }
+                }
+            }
+            function jian(obj){
+                var pnumarr=document.getElementsByName("pnum");
+                for (i=0;i<pnumarr.length;i++) {
+                    if (pnumarr[i].id == $(obj).attr('name')) {
+                        var number=parseInt(pnumarr[i].innerHTML);
+                        if(number == 1){
+                            alert("商品已移出购物车~")
+                            alert("商品购物车id:" + $(obj).attr('name'))
+                            location.href="/removecart/" + $(obj).attr('name');
+                        }else {
+                            $.post({
+                                url: "/reduce/" + $(obj).attr('id'),
+                                success:function (data) {
+                                }
+                            });
+                        }
+
+                        number--;
+                        pnumarr[i].innerHTML=number;
+                    }
+                }
+            }
+
+            function removecart(obj) {
+                location.href="/removecart/" + $(obj).attr('id');
+            }
+
+        </script>
+
+		<!-- Bootstrap core JavaScript
+    ================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script type="text/javascript" src="asserts/js/jquery-3.2.1.slim.min.js" th:src="@{/webjars/jquery/3.4.0/jquery.js}"></script>
+		<script type="text/javascript" src="asserts/js/popper.min.js" th:src="@{/webjars/popper.js/1.14.3/dist/popper.js}"></script>
+		<script type="text/javascript" src="asserts/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/4.3.0/js/bootstrap.js}"></script>
+		<script type="text/javascript" src="asserts/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/4.3.0/css/bootstrap.css}"></script>
+
+		<!-- Icons -->
+		<script type="text/javascript" src="asserts/js/feather.min.js" th:src="@{/asserts/js/feather.min.js}"></script>
+		<script>
+			feather.replace()
+		</script>
+
+		<!-- Graphs -->
+		<script type="text/javascript" src="asserts/js/Chart.min.js" th:src="@{/asserts/js/Chart.min.js}"></script>
+	</body>
+
+</html>

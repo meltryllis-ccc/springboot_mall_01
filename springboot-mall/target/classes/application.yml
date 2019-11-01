@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    username: root
+    password: 1143420875
+    url: jdbc:mysql://127.0.0.1:3306/springbootmall?serverTimezone=GMT&characterEncoding=UTF-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialization-mode: always
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 10MB
+      max-file-size: 10MB
+      max-request-size: 100MB
+  thymeleaf:
+    encoding: utf-8
+
+mybatis:
+  config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml

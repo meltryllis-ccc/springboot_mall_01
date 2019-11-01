@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)http://getbootstrap.com/docs/4.0/examples/dashboard/ -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>Dashboard Template for Bootstrap</title>
+		<!-- Bootstrap core CSS -->
+		<link href="asserts/css/bootstrap.min.css" th:href="@{/webjars/bootstrap/4.3.0/css/bootstrap.css}" rel="stylesheet">
+
+		<!-- Custom styles for this template -->
+		<link href="asserts/css/dashboard.css" th:href="@{/asserts/css/dashboard.css}" rel="stylesheet">
+		<style type="text/css">
+			/* Chart.js */
+
+			@-webkit-keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+
+			@keyframes chartjs-render-animation {
+				from {
+					opacity: 0.99
+				}
+				to {
+					opacity: 1
+				}
+			}
+
+			.chartjs-render-monitor {
+				-webkit-animation: chartjs-render-animation 0.001s;
+				animation: chartjs-render-animation 0.001s;
+			}
+
+            #pnum{
+                width: 49px;
+            }
+		</style>
+	</head>
+
+	<body>
+		<!--引入topbar-->
+        <div th:replace="commons/userbar::topbar"></div>
+        <div class="container-fluid">
+            <div class="row">
+                <!--引入sidebar-->
+                <div th:replace="commons/userbar::#sidebar(activeUri='main.html')"></div>
+				<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+                    <div>
+                        <img style="height: 300px;width: 200px" th:src="@{${product.image}}"/>
+                        <div style="display: inline-block">
+                            <h3 th:text="${product.pName}" th:name="${product.id}" id="pName"></h3>
+                            <p th:text="${product.info}"></p>
+                            <p th:text="${product.price} + '￥'"></p>
+<!--                            onclick="pay(this)"-->
+                            <button th:id="${product.price}" type="button" class="btn btn-success" data-toggle="modal" data-target="#myModal">购买</button>
+                            <button th:id="${product.id}" type="button" class="btn btn-info" onclick="cartInsert(this)">加入购物车</button>
+
+                            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title" id="myModalLabel">
+                                                购买商品
+                                            </h4>
+                                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                                &times;
+                                            </button>
+                                        </div>
+                                        <div class="num" style="text-align: center">
+                                            <br/>
+                                            <br/>
+                                            <span>选择商品数量</span>&nbsp;&nbsp;
+                                            <button th:id="${product.price}" onclick="jia(this)">
+                                                +
+                                            </button>
+                                            <input type="text" id="pnum" name="orderpnum" value="1" onkeyup="value=value.replace(/[^\d]/g,'')" min='1' autocomplete="off">
+
+                                            <button th:id="${product.price}" onclick="jian(this)">
+                                                —
+                                            </button>
+
+                                            <br/>
+                                            <br/>
+                                            总价：&nbsp;&nbsp;
+                                            <span id="totalPrice">[[${product.price}]]</span>
+                                            &nbsp;&nbsp;￥
+                                            <br><br>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">
+                                                    取消
+                                                </button>
+                                                <button type="button" th:id="${product.price}" class="btn btn-primary" onclick="pay(this)">
+                                                    去支付
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div><!-- /.modal-content -->
+                                </div><!-- /.modal -->
+                            </div>
+                        </div>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <h4>商品详情</h4>
+                    <div th:utext="${product.details}">
+
+                    </div>
+
+
+					<canvas class="my-4 chartjs-render-monitor" id="myChart" width="1076" height="454" style="display: block; width: 1076px; height: 454px;"></canvas>
+
+				</main>
+			</div>
+		</div>
+
+		<!-- Bootstrap core JavaScript
+    ================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script type="text/javascript" src="asserts/js/jquery-3.2.1.slim.min.js" th:src="@{/webjars/jquery/3.4.0/jquery.js}"></script>
+		<script type="text/javascript" src="asserts/js/popper.min.js" th:src="@{/webjars/popper.js/1.14.3/dist/popper.js}"></script>
+		<script type="text/javascript" src="asserts/js/bootstrap.min.js" th:src="@{/webjars/bootstrap/4.3.0/js/bootstrap.js}"></script>
+
+		<!-- Icons -->
+		<script type="text/javascript" src="asserts/js/feather.min.js" th:src="@{/asserts/js/feather.min.js}"></script>
+		<script>
+			feather.replace()
+		</script>
+
+		<!-- Graphs -->
+		<script type="text/javascript" src="asserts/js/Chart.min.js" th:src="@{/asserts/js/Chart.min.js}"></script>
+
+        <script type="text/javascript">
+
+            /*控制商品数量加减*/
+            function jia(obj){
+
+                var pnum=$('input[name="orderpnum"]');
+                var price=$(obj).attr('id')
+                var number=parseInt(pnum.val());
+                number++;
+                $("#pnum").val(number);
+                $("#totalPrice").html(price * number)
+            }
+
+            function jian(obj){
+
+                var pnum=$('input[name="orderpnum"]');
+                var price=$(obj).attr('id');
+                var number=parseInt(pnum.val());
+                if (number <= 1) {
+                    number=1;
+                }else {
+                    number--;
+                }
+                $("#pnum").val(number);
+                $("#totalPrice").html(price * number)
+            }
+            function pay(obj){
+                var pName = $("#pName").html();
+                var pid = $("#pName").attr('name');
+                var price = $(obj).attr('id');
+                var pnum = parseInt($('input[name="orderpnum"]').val());
+                var totalPrice = $("#totalPrice").html();
+
+                window.location.href="/goAlipay?pName="+pName + "&pid=" + pid + "&price=" + price + "&num=" + pnum;
+                // /goAlipay?pid=75&pName=%E5%AE%A3%E4%BC%A0%E6%B5%B7%E6%8A%A5&price=10.0&num=1
+
+            }
+
+            function cartInsert(obj) {
+
+                alert("成功加入购物车！")
+
+                $.ajax({
+                    url:"/insertCart/" + $(obj).attr('id'),
+                    success:function (data) {
+                        // window.location.href="index";
+                    }
+                })
+            }
+
+        </script>
+
+	</body>
+
+</html>
